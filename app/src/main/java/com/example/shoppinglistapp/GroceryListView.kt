@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,7 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,15 +39,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
 @Composable
 fun View(
-    currItemName: MutableState<String>,
-    currItemVal: MutableState<String>,
-    showDialog: MutableState<Boolean>,
-    itemList: SnapshotStateList<Item>,
-    current: Context
+    groceryListViewModel: GroceryListViewModel,
+    context: Context
 ) {
-    ShowDialog(currItemName, currItemVal, showDialog, itemList, current)
+    val showDialog = remember { mutableStateOf(false) }  // State for dialog visibility
+    val groceryItems = groceryListViewModel.groceryItems.observeAsState(emptyList()).value
+
+    ShowDialog(groceryListViewModel, groceryItems, context, showDialog)
     Column (
         modifier = Modifier.fillMaxSize()
     ){
@@ -82,18 +84,17 @@ fun View(
             modifier = Modifier.fillMaxSize()
         ){
 
-            items(itemList){
-               item->
-               displayItems(item.name, item.quantity)
-
-
+            items(groceryItems){
+                groceryItem->
+                Log.i("display the added value in lazy column",groceryItem.name )
+                DisplayItems(name =groceryItem.name , quantity = groceryItem.quantity.toString())
             }
         }
 
     }
 }
 @Composable
-fun displayItems(name: String, quantity: String) {
+fun DisplayItems(name: String, quantity: String) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -145,12 +146,13 @@ fun displayItems(name: String, quantity: String) {
 
 @Composable
 fun ShowDialog(
-    currItemName: MutableState<String>,
-    currItemVal: MutableState<String>,
+    groceryListViewModel: GroceryListViewModel,
+    groceryItems: List<Item>,
+    context: Context,
     showDialog: MutableState<Boolean>,
-    itemList: SnapshotStateList<Item>,
-    context: Context
-) {
+    ) {
+    val currItemName = remember { mutableStateOf("") }  // State for current item name
+    val currItemVal = remember { mutableStateOf("") }   // State for current item quantity
   if(showDialog.value) {
         AlertDialog(
             onDismissRequest = {
@@ -164,16 +166,18 @@ fun ShowDialog(
                     onClick = {
                         showDialog.value = false
                         if(!currItemName.equals("") && !currItemVal.equals("")) {
-                            itemList.add(
-                                Item(
-                                    itemList.size+1,
-                                    currItemName.value,
-                                    currItemVal.value
+                            try {
+                                groceryListViewModel.addItem(
+                                    groceryItems.size + 1,
+                                    currItemName.value, currItemVal.value.toInt()
                                 )
-                            )
-                            currItemVal.value=""
-                            currItemName.value=""
-                            Log.i("all_items", itemList.toString())
+                                Log.i("display the added value", groceryItems.toString())
+                                currItemVal.value = ""
+                                currItemName.value = ""
+                            } catch(ex:NumberFormatException){
+                                Toast.makeText(context, "please enter number in quantity box", Toast.LENGTH_SHORT).show()
+                            }
+
                         } else{
                             Toast.makeText(context, "Fill the Box", Toast.LENGTH_SHORT).show()
                         }
