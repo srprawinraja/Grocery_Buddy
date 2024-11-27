@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DismissDirection
@@ -108,19 +109,25 @@ fun View(
                         } else if(dismissValue == DismissValue.DismissedToEnd){
 
                         }
-                        true
-                    },
-
+                        false
+                    }
                 )
+                val swipeDirection = remember {
+                    mutableStateOf(false)
+                }
                 SwipeToDismiss(
                     state = dismissState,
-                    directions = setOf(DismissDirection.EndToStart),
+                    directions = setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart),
                     background = {
 
                                  val animeColor = animateColorAsState(
                                      targetValue = if(dismissState.dismissDirection == DismissDirection.EndToStart){
+                                         swipeDirection.value=true
                                          Color.Red
-                                     } else Color.Transparent,
+                                     } else {
+                                         swipeDirection.value=false
+                                         Color.Blue
+                                     },
                                      label = ""
                                  )
                         Box(
@@ -128,13 +135,18 @@ fun View(
                                 .fillMaxSize()
                                 .padding(start = 10.dp, top = 10.dp, end = 10.dp)
                                 .border(
-                                    BorderStroke(1.dp, color = Color.Red),
+                                    if (swipeDirection.value) {
+                                        BorderStroke(1.dp, color = Color.Red)
+                                    } else BorderStroke(1.dp, color = Color.Blue),
                                     shape = RoundedCornerShape(30)
-                                ).background(animeColor.value),
-                            contentAlignment = Alignment.CenterEnd
+                                )
+                                .background(animeColor.value),
+                            contentAlignment = if(swipeDirection.value) Alignment.CenterEnd else Alignment.CenterStart
                             ){
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "delete", tint = Color.Black,
-                                modifier = Modifier.padding(end = 10.dp))
+
+                            Icon(imageVector = if (swipeDirection.value) Icons.Default.Delete else Icons.Default.Edit, contentDescription = "delete", tint = Color.Black,
+
+                                modifier = Modifier.padding(end = 20.dp, start = 20.dp))
                         }
                     },
                     dismissContent = {
@@ -158,7 +170,8 @@ fun DisplayItems(name: String, quantity: String) {
             .border(
                 BorderStroke(1.dp, colorResource(id = R.color.silver)),
                 shape = RoundedCornerShape(30)
-            ).background(Color.White),
+            )
+            .background(Color.White),
 
         ) {
         Row(
