@@ -6,6 +6,9 @@ class GroceryModel {
         val temp=Item(id, itemName, itemQuantity)
         groceryItems.add(temp)
     }
+    fun deleteItem(groceryItem: Item){
+        groceryItems.remove(groceryItem)
+    }
     fun getItems():MutableList<Item>{
         return groceryItems
     }

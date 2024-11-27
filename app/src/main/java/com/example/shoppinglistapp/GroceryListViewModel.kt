@@ -13,6 +13,10 @@ class GroceryListViewModel : ViewModel() {
         groceryModel.addItem(id, itemName, itemQuantity)
         _groceryItems.value=groceryModel.getItems().toList()
     }
+    fun deleteItem(groceryItem: Item){
+        groceryModel.deleteItem(groceryItem)
+        _groceryItems.value=groceryModel.getItems().toList()
+    }
 
 
 }

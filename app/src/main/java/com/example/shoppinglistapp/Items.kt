@@ -1,7 +1,7 @@
 package com.example.shoppinglistapp
 
 data class Item(
-    val id:Int,
-    val name:String,
-    val quantity:Int
+    var id:Int,
+    var name:String,
+    var quantity:Int
 )
