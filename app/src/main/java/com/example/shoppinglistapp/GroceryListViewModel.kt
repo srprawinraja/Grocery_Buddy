@@ -13,8 +13,13 @@ class GroceryListViewModel : ViewModel() {
         groceryModel.addItem(id, itemName, itemQuantity)
         _groceryItems.value=groceryModel.getItems().toList()
     }
-    fun deleteItem(groceryItem: Item){
-        groceryModel.deleteItem(groceryItem)
+    fun deleteItem(groceryItemId: Int){
+        groceryModel.deleteItem(groceryItemId)
+        _groceryItems.value=groceryModel.getItems().toList()
+    }
+
+    fun updateItem(groceryItemId:Int, groceryItemName:String, groceryItemQuantity:Int){
+        groceryModel.updateItem(groceryItemId, groceryItemName, groceryItemQuantity)
         _groceryItems.value=groceryModel.getItems().toList()
     }
 

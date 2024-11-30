@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
@@ -62,10 +63,20 @@ fun View(
     groceryListViewModel: GroceryListViewModel,
     context: Context
 ) {
-    val showDialog = remember { mutableStateOf(false) }  // State for dialog visibility
+    val showDialogForAdd = remember { mutableStateOf(false) }  // State for dialog visibility
+    val showDialogForUpdate = remember { mutableStateOf(false) }  // State for dialog visibility
+    val currItemName=mutabl
+    val currItemVal
     val groceryItems = groceryListViewModel.groceryItems.observeAsState(emptyList()).value
 
-    ShowDialog(groceryListViewModel, groceryItems, context, showDialog)
+    if(showDialogForAdd.value) {
+        ShowDialog(
+            groceryListViewModel, context, showDialogForAdd, groceryItems.size,
+            "", "",
+            "Add Item", "Add"
+        )
+    }
+
     Column (
         modifier = Modifier.fillMaxSize()
     ){
@@ -81,7 +92,7 @@ fun View(
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             onClick = {
-                showDialog.value=true
+                showDialogForAdd.value=true
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -100,18 +111,33 @@ fun View(
         LazyColumn (
             modifier = Modifier.fillMaxSize()
         ){
+
             items(groceryItems, key = {groceryItem -> groceryItem.id}){
                 groceryItem->
+                if(showDialogForUpdate.value) {
+                    ShowDialog(
+                        groceryListViewModel,
+                        context,
+                        showDialogForUpdate,
+                        groceryItem.id,
+                        groceryItem.name,
+                        groceryItem.quantity.toString(),
+                        "Update Item",
+                        "Update"
+                    )
+                }
                 val dismissState = rememberDismissState(
                     confirmValueChange = {dismissValue->
                         if(dismissValue==DismissValue.DismissedToStart){
-                            groceryListViewModel.deleteItem(groceryItem)
+                            groceryListViewModel.deleteItem(groceryItem.id)
                         } else if(dismissValue == DismissValue.DismissedToEnd){
-
+                            showDialogForUpdate.value=true
+                            Log.i("Display update value", groceryItem.name)
                         }
                         false
                     }
                 )
+
                 val swipeDirection = remember {
                     mutableStateOf(false)
                 }
@@ -213,36 +239,47 @@ fun DisplayItems(name: String, quantity: String) {
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun ShowDialog(
     groceryListViewModel: GroceryListViewModel,
-    groceryItems: List<Item>,
     context: Context,
     showDialog: MutableState<Boolean>,
+    itemId: Int,
+    currItemName:MutableState<String>,
+    currItemVal:MutableState<String>,
+    titleText:String,
+    buttonText:String
     ) {
-    val currItemName = remember { mutableStateOf("") }  // State for current item name
-    val currItemVal = remember { mutableStateOf("") }   // State for current item quantity
-  if(showDialog.value) {
+
+ // if(showDialog.value) {
         AlertDialog(
             onDismissRequest = {
                 showDialog.value = false
             },
             title = {
-                Text(text = "Add Item")
+                Text(text = titleText)
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDialog.value = false
-                        if(!currItemName.equals("") && !currItemVal.equals("")) {
+                        if(!currItemName.value.equals("") && !currItemVal.value.equals("")) {
                             try {
-                                groceryListViewModel.addItem(
-                                    groceryItems.size + 1,
-                                    currItemName.value, currItemVal.value.toInt()
-                                )
-                                Log.i("display the value", groceryListViewModel.groceryItems.value.toString())
-                                currItemVal.value = ""
-                                currItemName.value = ""
+                                if(buttonText=="Add"){
+                                    groceryListViewModel.addItem(
+                                        itemId + 1,
+                                        currItemName.value, currItemVal.value.toInt()
+                                    )
+                                } else{
+                                    groceryListViewModel.updateItem(
+                                        itemId,
+                                        currItemName.value,
+                                        currItemVal.value.toInt()
+                                    )
+                                    currItemVal.value=""
+                                    currItemName.value=""
+                                }
                             } catch(ex:NumberFormatException){
                                 Toast.makeText(context, "please enter number in quantity box", Toast.LENGTH_SHORT).show()
                             }
@@ -253,7 +290,7 @@ fun ShowDialog(
                     },
 
                     ) {
-                    Text(text = "Add")
+                    Text(text = buttonText)
                 }
             },
             text = {
@@ -279,7 +316,7 @@ fun ShowDialog(
                 }
             }
         )
-  }
+ // }
 }
 
 @SuppressLint("UnrememberedMutableState")
