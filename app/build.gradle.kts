@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
+
 }
 
 android {
@@ -50,8 +52,16 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.runtime.livedata)
     val lifecycle_version = "2.8.5"
+
+    implementation( "androidx.room:room-runtime:2.6.0") // Room runtime
+    annotationProcessor( "androidx.room:room-compiler:2.6.0") // For annotation processing (use kapt for Kotlin)
+
+    // For Kotlin projects (use kapt instead of annotationProcessor)
+    kapt( "androidx.room:room-compiler:2.6.0")
+
+
+    implementation(libs.androidx.runtime.livedata)
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -68,4 +78,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See Add the KSP plugin to your project
+    kapt("androidx.room:room-compiler:$room_version")
 }

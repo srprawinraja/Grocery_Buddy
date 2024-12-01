@@ -1,42 +1,24 @@
 package com.example.shoppinglistapp
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 
 class GroceryModel {
-    private var groceryItems:MutableList<Item> = mutableListOf()
+    private val groceryListDao = MainActivity.groceryListDataBase.getGroceryListDao()
     fun addItem(id:Int, itemName:String, itemQuantity:Int){
-        Log.i("value add", id.toString())
-
         val temp=Item(id, itemName, itemQuantity)
-        groceryItems.add(temp)
+       groceryListDao.addItem(temp)
     }
     fun deleteItem(groceryItemId: Int){
-
-        var currentIndex=groceryItemId
-        val size = groceryItems.size
-        for(items in  groceryItems){
-            if(items.id==currentIndex && groceryItems.size == size){
-                Log.i("value delete", currentIndex.toString())
-                groceryItems.removeAt(currentIndex)
-            } else if( groceryItems.size != size){
-                items.id = currentIndex-1
-                currentIndex+=1
-            }
-
-        }
+        groceryListDao.deleteItem(groceryItemId)
     }
 
-    fun updateItem(groceryItemId:Int, groceryItemName:String, groceryItemQuantity:Int){
-        Log.i("value update", groceryItemId.toString())
-        for(items in groceryItems){
-            if(items.id==groceryItemId){
-                items.name=groceryItemName
-                items.quantity=groceryItemQuantity
-            }
-        }
+    fun updateItem(id:Int, itemName:String, itemQuantity:Int){
+        val temp=Item(id, itemName, itemQuantity)
+        groceryListDao.updateItem(temp)
     }
 
-    fun getItems():MutableList<Item>{
-        return groceryItems
+    fun getItems(): LiveData<List<Item>> {
+        return groceryListDao.getItems()
     }
 }

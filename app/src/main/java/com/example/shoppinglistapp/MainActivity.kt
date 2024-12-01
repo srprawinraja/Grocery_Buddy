@@ -12,11 +12,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.shoppinglistapp.db.GroceryListDao
+import com.example.shoppinglistapp.db.GroceryListDataBase
 import com.example.shoppinglistapp.ui.theme.ShoppingListAppTheme
 
 class MainActivity : ComponentActivity() {
+    companion object{
+        lateinit var groceryListDataBase: GroceryListDataBase
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Room.databaseBuilder(
+            applicationContext,
+            GroceryListDataBase::class.java,
+            GroceryListDataBase.NAME
+        ).build()
         setContent {
             ShoppingListAppTheme {
                 Surface (
