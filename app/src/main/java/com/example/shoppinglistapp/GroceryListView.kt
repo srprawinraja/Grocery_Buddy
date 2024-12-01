@@ -34,7 +34,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SwipeToDismiss
-import androidx.compose.material3.SwipeToDismissDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDismissState
@@ -46,8 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.example.shoppinglistapp.ui.theme.ShoppingListAppTheme
 
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun View(
@@ -65,20 +63,21 @@ fun View(
 ) {
     val showDialogForAdd = remember { mutableStateOf(false) }  // State for dialog visibility
     val showDialogForUpdate = remember { mutableStateOf(false) }  // State for dialog visibility
-    val currItemName=mutabl
-    val currItemVal
+    val currItemName= remember { mutableStateOf("") }
+    val currItemVal= remember{mutableStateOf("")}
+    val currItemId = remember{ mutableStateOf(0) }
     val groceryItems = groceryListViewModel.groceryItems.observeAsState(emptyList()).value
 
     if(showDialogForAdd.value) {
         ShowDialog(
-            groceryListViewModel, context, showDialogForAdd, groceryItems.size,
-            "", "",
+            groceryListViewModel ,context, showDialogForAdd, currItemId,
+            currItemName, currItemVal,
             "Add Item", "Add"
         )
     }
 
     Column (
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().background(color = Color.White)
     ){
         Spacer(modifier = Modifier.height(50.dp))
         Text(
@@ -93,6 +92,9 @@ fun View(
         Button(
             onClick = {
                 showDialogForAdd.value=true
+                currItemId.value=groceryItems.size
+                currItemName.value=""
+                currItemVal.value=""
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,9 +121,9 @@ fun View(
                         groceryListViewModel,
                         context,
                         showDialogForUpdate,
-                        groceryItem.id,
-                        groceryItem.name,
-                        groceryItem.quantity.toString(),
+                        currItemId,
+                        currItemName,
+                        currItemVal,
                         "Update Item",
                         "Update"
                     )
@@ -132,7 +134,9 @@ fun View(
                             groceryListViewModel.deleteItem(groceryItem.id)
                         } else if(dismissValue == DismissValue.DismissedToEnd){
                             showDialogForUpdate.value=true
-                            Log.i("Display update value", groceryItem.name)
+                            currItemId.value=groceryItem.id
+                            currItemName.value=groceryItem.name
+                            currItemVal.value=groceryItem.quantity.toString()
                         }
                         false
                     }
@@ -231,7 +235,8 @@ fun DisplayItems(name: String, quantity: String) {
                         bottom = 10.dp,
                         end = 15.dp,
                         top = 10.dp
-                    )
+                    ),
+                    color = Color.Black
                 )
             }
         }
@@ -245,12 +250,12 @@ fun ShowDialog(
     groceryListViewModel: GroceryListViewModel,
     context: Context,
     showDialog: MutableState<Boolean>,
-    itemId: Int,
-    currItemName:MutableState<String>,
-    currItemVal:MutableState<String>,
-    titleText:String,
-    buttonText:String
-    ) {
+    currItemId: MutableState<Int>,
+    currItemName: MutableState<String>,
+    currItemVal: MutableState<String>,
+    titleText: String,
+    buttonText: String
+) {
 
  // if(showDialog.value) {
         AlertDialog(
@@ -268,17 +273,17 @@ fun ShowDialog(
                             try {
                                 if(buttonText=="Add"){
                                     groceryListViewModel.addItem(
-                                        itemId + 1,
-                                        currItemName.value, currItemVal.value.toInt()
+                                        currItemId.value,
+                                        currItemName.value.trim(), currItemVal.value.trim().toInt()
                                     )
                                 } else{
+
                                     groceryListViewModel.updateItem(
-                                        itemId,
+                                        currItemId.value,
                                         currItemName.value,
                                         currItemVal.value.toInt()
                                     )
-                                    currItemVal.value=""
-                                    currItemName.value=""
+
                                 }
                             } catch(ex:NumberFormatException){
                                 Toast.makeText(context, "please enter number in quantity box", Toast.LENGTH_SHORT).show()
