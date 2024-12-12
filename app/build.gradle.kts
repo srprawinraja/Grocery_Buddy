@@ -52,37 +52,36 @@ android {
 }
 
 dependencies {
-    val lifecycle_version = "2.8.5"
+    // Android Core Libraries
+    implementation(libs.androidx.core.ktx) // Core Kotlin extensions
+    implementation(libs.androidx.activity.compose) // Compose Activity integration
 
-    implementation( "androidx.room:room-runtime:2.6.0") // Room runtime
-    annotationProcessor( "androidx.room:room-compiler:2.6.0") // For annotation processing (use kapt for Kotlin)
-
-    // For Kotlin projects (use kapt instead of annotationProcessor)
-    kapt( "androidx.room:room-compiler:2.6.0")
-
-
-    implementation(libs.androidx.runtime.livedata)
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Room Database
     val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version") // Room runtime
+    implementation("androidx.room:room-ktx:$room_version") // Room Coroutine extensions
+    kapt("androidx.room:room-compiler:$room_version") // Annotation processor for Room
 
-    implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
-    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
-    // See Add the KSP plugin to your project
-    kapt("androidx.room:room-compiler:$room_version")
+    // Lifecycle and ViewModel
+    val lifecycle_version = "2.8.5"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version") // ViewModel with Coroutines
+    implementation(libs.androidx.runtime.livedata) // LiveData
+    implementation(libs.androidx.lifecycle.runtime.ktx) // Lifecycle runtime extensions
+
+    // Jetpack Compose Libraries
+    implementation(platform(libs.androidx.compose.bom)) // Compose BOM (manages Compose versions)
+    implementation(libs.androidx.ui) // Compose UI toolkit
+    implementation(libs.androidx.ui.graphics) // Compose graphics library
+    implementation(libs.androidx.ui.tooling.preview) // Preview tools for Compose
+    implementation(libs.androidx.material3) // Material Design 3 components
+
+    // Testing Dependencies
+    testImplementation(libs.junit) // JUnit for unit tests
+    androidTestImplementation(libs.androidx.junit) // Android JUnit extensions
+    androidTestImplementation(libs.androidx.espresso.core) // Espresso for UI testing
+    androidTestImplementation(platform(libs.androidx.compose.bom)) // Compose testing BOM
+    androidTestImplementation(libs.androidx.ui.test.junit4) // Compose JUnit integration
+    debugImplementation(libs.androidx.ui.tooling) // Compose tooling for debugging
+    debugImplementation(libs.androidx.ui.test.manifest) // Manifest for Compose testing
+
 }

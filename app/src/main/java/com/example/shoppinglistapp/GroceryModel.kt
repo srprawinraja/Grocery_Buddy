@@ -5,20 +5,20 @@ import androidx.lifecycle.LiveData
 
 class GroceryModel {
     private val groceryListDao = MainActivity.groceryListDataBase.getGroceryListDao()
-    fun addItem(id:Int, itemName:String, itemQuantity:Int){
-        val temp=Item(id, itemName, itemQuantity)
-       groceryListDao.addItem(temp)
-    }
-    fun deleteItem(groceryItemId: Int){
-        groceryListDao.deleteItem(groceryItemId)
+    suspend fun addItem(itemName: String, itemQuantity: Int) {
+        groceryListDao.addItem(Item(name = itemName, quantity = itemQuantity))
     }
 
-    fun updateItem(id:Int, itemName:String, itemQuantity:Int){
-        val temp=Item(id, itemName, itemQuantity)
-        groceryListDao.updateItem(temp)
+    suspend fun deleteItem(id: Int) {
+        groceryListDao.deleteItem(id)
     }
 
+    suspend fun updateItem(itemId: Int, itemName: String, itemQuantity: Int) {
+        groceryListDao.updateItem(itemId, itemName, itemQuantity)
+    }
     fun getItems(): LiveData<List<Item>> {
         return groceryListDao.getItems()
     }
+
+
 }

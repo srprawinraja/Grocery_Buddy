@@ -2,6 +2,7 @@ package com.example.shoppinglistapp.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -13,12 +14,14 @@ interface GroceryListDao {
     fun getItems() : LiveData<List<Item>>
 
     @Insert
-    fun addItem(item:Item)
+    suspend fun addItem(item:Item)
 
-    @Query("DELETE FROM Item where id=:id")
-    fun deleteItem(id:Int)
+    @Query("DELETE FROM Item WHERE id=:id")
+    suspend fun deleteItem(id:Int)
 
-    @Update
-    fun updateItem(item:Item)
+    @Query("UPDATE Item SET name = :name, quantity = :quantity WHERE id = :id")
+    suspend fun updateItem(id:Int, name:String, quantity:Int)
+
+
 
 }

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissState
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,10 +39,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -63,21 +68,31 @@ fun View(
 ) {
     val showDialogForAdd = remember { mutableStateOf(false) }  // State for dialog visibility
     val showDialogForUpdate = remember { mutableStateOf(false) }  // State for dialog visibility
-    val currItemName= remember { mutableStateOf("") }
-    val currItemVal= remember{mutableStateOf("")}
-    val currItemId = remember{ mutableStateOf(0) }
+
+    val currItemName = remember {
+        mutableStateOf("")
+    }
+    val currItemQuantity = remember {
+        mutableStateOf("")
+    }
+    val currItemId= remember {
+        mutableStateOf(0)
+    }
+
     val groceryItems = groceryListViewModel.groceryItems.observeAsState(emptyList()).value
 
     if(showDialogForAdd.value) {
         ShowDialog(
             groceryListViewModel ,context, showDialogForAdd, currItemId,
-            currItemName, currItemVal,
+            currItemName, currItemQuantity,
             "Add Item", "Add"
         )
     }
 
     Column (
-        modifier = Modifier.fillMaxSize().background(color = Color.White)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.White)
     ){
         Spacer(modifier = Modifier.height(50.dp))
         Text(
@@ -91,10 +106,9 @@ fun View(
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             onClick = {
-                showDialogForAdd.value=true
-                currItemId.value=groceryItems.size
                 currItemName.value=""
-                currItemVal.value=""
+                currItemQuantity.value=""
+                showDialogForAdd.value=true
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -116,6 +130,20 @@ fun View(
 
             items(groceryItems, key = {groceryItem -> groceryItem.id}){
                 groceryItem->
+                val dismissState = DismissState(
+                    DismissValue.Default,
+                    confirmValueChange = {dismissValue->
+                        if(dismissValue==DismissValue.DismissedToStart){
+                            groceryListViewModel.deleteItem(groceryItem.id)
+                        } else if(dismissValue == DismissValue.DismissedToEnd){
+                            currItemId.value=groceryItem.id
+                            currItemQuantity.value = groceryItem.quantity.toString()
+                            currItemName.value = groceryItem.name
+                            showDialogForUpdate.value=true
+                        }
+                        false
+                    }
+                )
                 if(showDialogForUpdate.value) {
                     ShowDialog(
                         groceryListViewModel,
@@ -123,24 +151,11 @@ fun View(
                         showDialogForUpdate,
                         currItemId,
                         currItemName,
-                        currItemVal,
+                        currItemQuantity,
                         "Update Item",
                         "Update"
                     )
                 }
-                val dismissState = rememberDismissState(
-                    confirmValueChange = {dismissValue->
-                        if(dismissValue==DismissValue.DismissedToStart){
-                            groceryListViewModel.deleteItem(groceryItem.id)
-                        } else if(dismissValue == DismissValue.DismissedToEnd){
-                            showDialogForUpdate.value=true
-                            currItemId.value=groceryItem.id
-                            currItemName.value=groceryItem.name
-                            currItemVal.value=groceryItem.quantity.toString()
-                        }
-                        false
-                    }
-                )
 
                 val swipeDirection = remember {
                     mutableStateOf(false)
@@ -164,6 +179,8 @@ fun View(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(start = 10.dp, top = 10.dp, end = 10.dp)
+                                .clickable {
+                                }
                                 .border(
                                     if (swipeDirection.value) {
                                         BorderStroke(1.dp, color = Color.Red)
@@ -257,6 +274,7 @@ fun ShowDialog(
     buttonText: String
 ) {
 
+
  // if(showDialog.value) {
         AlertDialog(
             onDismissRequest = {
@@ -269,15 +287,14 @@ fun ShowDialog(
                 TextButton(
                     onClick = {
                         showDialog.value = false
-                        if(!currItemName.value.equals("") && !currItemVal.value.equals("")) {
+                        if(currItemName.value != "" && currItemVal.value != "") {
                             try {
                                 if(buttonText=="Add"){
+
                                     groceryListViewModel.addItem(
-                                        currItemId.value,
                                         currItemName.value.trim(), currItemVal.value.trim().toInt()
                                     )
                                 } else{
-
                                     groceryListViewModel.updateItem(
                                         currItemId.value,
                                         currItemName.value,

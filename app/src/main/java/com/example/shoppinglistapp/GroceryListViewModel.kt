@@ -1,24 +1,35 @@
 package com.example.shoppinglistapp
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
 
 class GroceryListViewModel : ViewModel() {
 
     private val groceryModel:GroceryModel = GroceryModel()
-
     val groceryItems:LiveData<List<Item>>  = groceryModel.getItems()
 
-    fun addItem(id:Int, itemName:String, itemQuantity:Int){
-        groceryModel.addItem(id, itemName, itemQuantity)
+
+    fun addItem(itemName:String, itemQuantity:Int){
+        viewModelScope.launch {
+            groceryModel.addItem(itemName, itemQuantity)
+        }
+
     }
     fun deleteItem(groceryItemId: Int){
-        groceryModel.deleteItem(groceryItemId)
+        viewModelScope.launch {
+            groceryModel.deleteItem(groceryItemId)
+        }
     }
 
     fun updateItem(groceryItemId:Int, groceryItemName:String, groceryItemQuantity:Int){
-        groceryModel.updateItem(groceryItemId, groceryItemName, groceryItemQuantity)
+        viewModelScope.launch {
+            groceryModel.updateItem(groceryItemId, groceryItemName, groceryItemQuantity)
+        }
     }
 
 
